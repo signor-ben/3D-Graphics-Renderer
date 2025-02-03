@@ -1,2 +1,2 @@
-# 3D-Graphics-Engine
-A 3D graphics engine built from scratch in C++ without using any graphical API (eg. opengl, vulkan).
+# 3D-Graphics-Renderer
+A 3D graphics renderer built from using OpenGl in CPP.
