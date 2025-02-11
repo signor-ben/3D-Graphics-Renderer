@@ -1,3 +1,0 @@
-/home/bsignorelli/3D-Graphics-Engine/build/CMakeFiles/testing.dir
-/home/bsignorelli/3D-Graphics-Engine/build/CMakeFiles/edit_cache.dir
-/home/bsignorelli/3D-Graphics-Engine/build/CMakeFiles/rebuild_cache.dir
