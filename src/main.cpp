@@ -18,7 +18,7 @@ const char *fragmentShaderSource =                                              
     "out vec4 FragColor;\n"
     "void main()\n"
     "{\n"
-    "    FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
+    "    FragColor = vec4(1.0f, 0.510f, 0.051f, 1.0f);\n"
     "}\n\0";
 
 int main()
@@ -112,7 +112,7 @@ int main()
         processInput(window);
 
         // rendering 
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(0.094f, 0.090f, 0.086f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);                                                // set ogl to use this SPO for shading and rendering
