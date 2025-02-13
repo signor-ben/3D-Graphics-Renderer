@@ -1,0 +1,11 @@
+#version 330 core
+out vec4 FragColor;
+
+in vec3 ourColor;
+
+uniform float colOff;
+
+void main()
+{
+    FragColor = vec4(ourColor.x + colOff, ourColor.y + colOff, ourColor.z + colOff, 1.0);
+}

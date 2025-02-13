@@ -1,25 +1,11 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <cmath>
+#include "shader.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);          // define a function for dynamic window resizing
 void processInput(GLFWwindow *window);                                              // function to close window when esc is pressed
-
-const char *vertexShaderSource =                                                    // source code for the vertex shader stored in a string
-    "#version 330 core\n"        
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-
-const char *fragmentShaderSource =                                                  // source code for the fragment shader stored in a string
-    "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "    FragColor = vec4(1.0f, 0.510f, 0.051f, 1.0f);\n"
-    "}\n\0";
 
 int main()
 {
@@ -44,67 +30,36 @@ int main()
         return -1;
     }    
 
-    // vertex shader
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);                   // vertex shader object, generate id and create the shader
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);                     // attach shader source to the new VSO
-    glCompileShader(vertexShader);                                                  // compile the VSO
-
-    int success;                                                                   /* compilation error checking */
-    char infoLog[512];
-
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if(!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // fragment shader
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);               // frag shader object, same process as VSO but with Fragment Shader instead
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);                     /* compilation error checking */
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // Link shaders with shader program
-    unsigned int shaderProgram = glCreateProgram();                                 // shader Program object
-    glAttachShader(shaderProgram, vertexShader);                                    // attach the shaders to the SPO and then link them together
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    glDeleteShader(vertexShader);                                                   // delete now obsolete shader objects
-    glDeleteShader(fragmentShader);  
-
+    Shader shader("../src/shaders/vshader.txt", "../src/shaders/fshader.txt");
+    
     // vertex data and input 
     float vertices[] = {
-        // first triangle
-         0.5f,  0.5f, 0.0f,  // top right
-         0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f,  0.5f, 0.0f,  // top left 
-        // second triangle
-         0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  // bottom left
-        -0.5f,  0.5f, 0.0f   // top left
+        // first triangle    //colors
+        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, // top right 
+         0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f, // bottom left
+         0.0f,  0.5f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom right
     }; 
 
-    unsigned int VAO;                                                               // Vertex Array Object, stores VBOs, Vert Att configs, and calls to VA
+    unsigned int VAO, VBO;                                                          // Vertex Array Object, stores VBOs, Vert Att configs, and calls to VA
     glGenVertexArrays(1, &VAO);  
+    glGenBuffers(1, &VBO);                                                          // generate an obj id with glGenBuffers
     glBindVertexArray(VAO);
 
-    unsigned int VBO;                                                               // vertex buffer object, stores a bunch of vertices
-    glGenBuffers(1, &VBO);                                                          // generate an obj id with glGenBuffers
     glBindBuffer(GL_ARRAY_BUFFER, VBO);                                             // bind the VBO to an array buffer type
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);      // copy data from vertices into the buffer
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);   // define how ogl interprets the vertex data in the VBO
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);   // define how ogl interprets the vertex data in the VBO
     glEnableVertexAttribArray(0); 
+    
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);                                               // Unbind VBO
     glBindVertexArray(0);                                                           // Unbind VAO
 
+
+
+    
     // the render loop
     while(!glfwWindowShouldClose(window))                                           
     {
@@ -112,12 +67,28 @@ int main()
         processInput(window);
 
         // rendering 
-        glClearColor(0.094f, 0.090f, 0.086f, 1.0f);
+        float timeValue = glfwGetTime();
+        float red = (sin(timeValue * 2.0f) + 1.0f) / 2.0f;  // Oscillates between 0 and 1
+        float green = (cos(timeValue * 2.0f) + 1.0f) / 2.0f;
+        float blue = (sin(timeValue * 1.5f) + 1.0f) / 2.0f;
+
+        glClearColor(red, green, blue, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);                                                // set ogl to use this SPO for shading and rendering
+                                                                     // set ogl to use this SPO for shading and rendering
+        
+        shader.use();
+
+        // update shader uniform
+        float xoffset = sin(timeValue*2.0f) * 0.5f;  // Moves back and forth
+        float yoffset = cos(timeValue*2.0f) * 0.5f;
+        float coloroffset = sin(timeValue*5.0f) * 0.5f;
+        shader.setFloat("xOffset", xoffset);
+        shader.setFloat("yOffset",yoffset);
+        shader.setFloat("colOff", coloroffset);
+        
         glBindVertexArray(VAO);                                                     // binds this VAO for current rendering
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);                                                       // Unbind after drawing
 
         // check/call events, and swap buffers
@@ -127,7 +98,6 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteProgram(shaderProgram);
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
