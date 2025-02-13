@@ -10,7 +10,7 @@ find_package(OpenGL REQUIRED)
 include_directories(include)
 
 # Add Executable
-add_executable(testing src/main.cpp src/glad.c)
+add_executable(testing src/main.cpp src/glad.c src/stb_image.cpp)
 
 # Link Libraries
 target_link_libraries(testing OpenGL::GL glfw)

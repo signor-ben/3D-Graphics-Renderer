@@ -10,6 +10,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/bsignorelli/3D-Graphics-Engine/src/glad.c" "CMakeFiles/testing.dir/src/glad.c.o" "gcc" "CMakeFiles/testing.dir/src/glad.c.o.d"
   "/home/bsignorelli/3D-Graphics-Engine/src/main.cpp" "CMakeFiles/testing.dir/src/main.cpp.o" "gcc" "CMakeFiles/testing.dir/src/main.cpp.o.d"
+  "/home/bsignorelli/3D-Graphics-Engine/src/stb_image.cpp" "CMakeFiles/testing.dir/src/stb_image.cpp.o" "gcc" "CMakeFiles/testing.dir/src/stb_image.cpp.o.d"
   )
 
 # Targets to which this target links.
