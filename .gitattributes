@@ -1,6 +1,8 @@
 # Ignore all .c files
 *.c linguist-vendored
 
+*.make linguist-vendored
+
 # Ignore all files within the build/CMake directory (including subdirectories)
 build/CMake/** linguist-vendored
 
