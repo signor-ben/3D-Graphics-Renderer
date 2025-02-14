@@ -2,6 +2,9 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cmath>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "shader.h"
 #include "stb_image.h"
 
@@ -88,7 +91,7 @@ int main()
 
     // load and generate the texture
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("../src/textures/container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("../src/textures/image.png", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -99,34 +102,34 @@ int main()
 
     stbi_image_free(data);                                                          // free redundant data
 
-    // texture2
-    glGenTextures(1, &texture2);
-    glBindTexture(GL_TEXTURE_2D, texture2);
+    // // texture2
+    // glGenTextures(1, &texture2);
+    // glBindTexture(GL_TEXTURE_2D, texture2);
 
-    // set the texture wrapping/filtering options (on the currently bound texture object)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // // set the texture wrapping/filtering options (on the currently bound texture object)
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // load and generate the texture
-    stbi_set_flip_vertically_on_load(true);  
-    data = stbi_load("../src/textures/awesomeface.png", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-        std::cout << "Failed to load texture" << std::endl;
+    // // load and generate the texture
+    // stbi_set_flip_vertically_on_load(true);  
+    // data = stbi_load("../src/textures/awesomeface.png", &width, &height, &nrChannels, 0);
+    // if (data)
+    // {
+    //     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    //     glGenerateMipmap(GL_TEXTURE_2D);
+    // }
+    // else
+    //     std::cout << "Failed to load texture" << std::endl;
 
-    stbi_image_free(data);                                                          // free redundant data
+    // stbi_image_free(data);                                                          // free redundant data
 
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     shader.use(); // don't forget to activate/use the shader before setting uniforms!
     shader.setInt("texture1", 0);
-    shader.setInt("texture2", 1);
+    // shader.setInt("texture2", 1);
 
 
     // the render loop
@@ -152,6 +155,14 @@ int main()
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
+
+        // transformations
+        glm::mat4 trans = glm::mat4(1.0f);
+        // trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));  
+        trans = glm::rotate(trans, (float)timeValue, glm::vec3(0.0, 0.0, 1.0));
+
+        unsigned int transformLoc = glGetUniformLocation(shader.ID, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
