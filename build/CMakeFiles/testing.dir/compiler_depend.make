@@ -486,6 +486,7 @@ CMakeFiles/testing.dir/src/main.cpp.o: ../src/main.cpp \
   /usr/include/c++/11/bits/fstream.tcc \
   /usr/include/c++/11/sstream \
   /usr/include/c++/11/bits/sstream.tcc \
+  ../src/camera.h \
   ../src/stb_image.h \
   /usr/include/c++/11/stdlib.h
 
@@ -627,6 +628,8 @@ CMakeFiles/testing.dir/src/stb_image.cpp.o: ../src/stb_image.cpp \
 /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h:
 
 ../src/stb_image.h:
+
+../src/camera.h:
 
 /usr/include/c++/11/sstream:
 

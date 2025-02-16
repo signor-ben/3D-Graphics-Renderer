@@ -348,5 +348,6 @@ CMakeFiles/testing.dir/src/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
  /usr/include/c++/11/bits/fstream.tcc /usr/include/c++/11/sstream \
  /usr/include/c++/11/bits/sstream.tcc \
+ /home/bsignorelli/3D-Graphics-Engine/src/camera.h \
  /home/bsignorelli/3D-Graphics-Engine/src/stb_image.h \
  /usr/include/c++/11/stdlib.h

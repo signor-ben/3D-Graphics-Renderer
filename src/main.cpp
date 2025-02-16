@@ -6,10 +6,23 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "shader.h"
+#include "camera.h"
 #include "stb_image.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);          // define a function for dynamic window resizing
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);                                              // function to close window when esc is pressed
+
+// camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX = 800 / 2.0f;
+float lastY = 600 / 2.0f;
+bool firstMouse = true;
+
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
 
 int main()
 {
@@ -17,6 +30,8 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);                                  // set version of opengl to 3.3
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);                  // using opengl core
+    // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+    // glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
   
     GLFWwindow* window = glfwCreateWindow(800, 600, "TESTING WINDOW", NULL, NULL);  // create a window object
     if (window == NULL)                                                             /* window creation error checking */
@@ -25,8 +40,18 @@ int main()
         glfwTerminate();
         return -1;
     }
-    glfwMakeContextCurrent(window);                                                 // set main context to the window
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);              // register that we call the func on resize
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
+
+    // tell GLFW to capture our mouse
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    if (glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_DISABLED) {
+        std::cerr << "Cursor locking failed!" << std::endl;
+    }
+ 
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))                        // glad init before using ogl functions
     {
@@ -37,6 +62,7 @@ int main()
     Shader shader("../src/shaders/vshader.txt", "../src/shaders/fshader.txt");
 
     glEnable(GL_DEPTH_TEST); 
+
     
     // vertex data and input 
     float vertices[] = {
@@ -145,10 +171,14 @@ int main()
     shader.use(); // don't forget to activate/use the shader before setting uniforms!
     shader.setInt("texture1", 0);
 
-
     // the render loop
     while(!glfwWindowShouldClose(window))                                           
     {
+                // time calculations
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;  
+
                 // inputs
         processInput(window);
 
@@ -163,21 +193,22 @@ int main()
                 // use our shader program!!!
         shader.use();
 
-                // transformations
-        // initialise the matrices
-        glm::mat4 view = glm::mat4(1.0f);
-        glm::mat4 projection = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
-        // apply uniforms
-        shader.setMat4("view", view); 
+            // initialize proj vec 
+        glm::mat4 projection = glm::mat4(1.0f);
+        projection = glm::perspective(glm::radians(camera.Zoom), (float)800 / (float)600, 0.1f, 100.0f);
         shader.setMat4("projection", projection);
+
+        // move the camera around the space/ view space transformations
+        glm::mat4 view = glm::mat4(1.0f);
+        view = camera.GetViewMatrix();
+        shader.setMat4("view", view);
 
                 // draw everything
         glBindVertexArray(VAO);
         for(unsigned int i = 0; i < 10; i++)
         {
+            // move the cubes around the space
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             double time = glfwGetTime();
@@ -194,6 +225,7 @@ int main()
         glBindVertexArray(0);                                                       // Unbind after drawing
 
                 // check/call events, and swap buffers
+        
         glfwSwapBuffers(window);
         glfwPollEvents();    
     }
@@ -205,13 +237,57 @@ int main()
     return 0;
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)           // give functionality
+void processInput(GLFWwindow *window)
 {
-    glViewport(0, 0, width, height);
-} 
-
-void processInput(GLFWwindow *window)                                               // give functionality
-{
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(RIGHT, deltaTime);
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and 
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+}
+
+
+// glfw: whenever the mouse moves, this callback is called
+// -------------------------------------------------------
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
