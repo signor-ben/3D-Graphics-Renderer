@@ -1,0 +1,16 @@
+# ninja log v6
+88	635	7614140522552324	CMakeFiles/testing.dir/src/stb_image.cpp.obj	d9e064765e1db1a4
+22	647	7614140521892361	CMakeFiles/testing.dir/src/glad.c.obj	9251baec42992ae1
+1058	1536	7614140532252327	testing.exe	8503fbf500d41cc3
+18	1058	7614140521852325	CMakeFiles/testing.dir/src/main.cpp.obj	2028698becaa9bd1
+5	16	7614148691071385	clean	8c45b54705a541e8
+23	483	7614148691481387	CMakeFiles/testing.dir/src/stb_image.cpp.obj	d9e064765e1db1a4
+19	538	7614148691441410	CMakeFiles/testing.dir/src/glad.c.obj	9251baec42992ae1
+10	918	7614149145407870	CMakeFiles/testing.dir/src/main.cpp.obj	2028698becaa9bd1
+919	1378	7614149154497910	testing.exe	8503fbf500d41cc3
+10	950	7614149568492264	CMakeFiles/testing.dir/src/main.cpp.obj	2028698becaa9bd1
+952	1180	7614149577902279	testing.exe	8503fbf500d41cc3
+10	863	7614149914787694	CMakeFiles/testing.dir/src/main.cpp.obj	2028698becaa9bd1
+864	1193	7614149923327697	testing.exe	8503fbf500d41cc3
+10	851	7614150502600648	CMakeFiles/testing.dir/src/main.cpp.obj	2028698becaa9bd1
+852	1053	7614150511010658	testing.exe	8503fbf500d41cc3

@@ -8,6 +8,7 @@
 #include "shader.h"
 #include "camera.h"
 #include "stb_image.h"
+#include <filesystem>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);          // define a function for dynamic window resizing
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -59,7 +60,7 @@ int main()
         return -1;
     }    
 
-    Shader shader("../src/shaders/vshader.txt", "../src/shaders/fshader.txt");
+    Shader shader("../../../src/shaders/vshader.txt", "../../../src/shaders/fshader.txt");
 
     glEnable(GL_DEPTH_TEST); 
 
@@ -185,7 +186,7 @@ int main()
 
     // load and generate the texture
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("../src/textures/dirt.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("../../../src/textures/dirt.jpg", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -205,7 +206,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    data = stbi_load("../src/textures/image.png", &width, &height, &nrChannels, 0);
+    data = stbi_load("../../../src/textures/image.png", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
