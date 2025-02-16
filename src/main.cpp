@@ -16,8 +16,8 @@ void processInput(GLFWwindow *window);                                          
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = 800 / 2.0f;
-float lastY = 600 / 2.0f;
+float lastX = 1200 / 2.0f;
+float lastY = 675 / 2.0f;
 bool firstMouse = true;
 
 // timing
@@ -33,7 +33,7 @@ int main()
     // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     // glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
   
-    GLFWwindow* window = glfwCreateWindow(800, 600, "TESTING WINDOW", NULL, NULL);  // create a window object
+    GLFWwindow* window = glfwCreateWindow(1200, 675, "TESTING WINDOW", NULL, NULL);  // create a window object
     if (window == NULL)                                                             /* window creation error checking */
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -65,8 +65,20 @@ int main()
 
     
     // vertex data and input 
+    float planeVertices[] = {
+        // Positions         // Texture coordinates
+        -10.0f, -1.0f, -10.0f, 0.0f, 0.0f,
+         10.0f, -1.0f, -10.0f, 1.0f, 0.0f,
+         10.0f, -1.0f,  10.0f, 1.0f, 1.0f,
+
+        -10.0f, -1.0f, -10.0f, 0.0f, 0.0f,
+         10.0f, -1.0f,  10.0f, 1.0f, 1.0f,
+        -10.0f, -1.0f,  10.0f, 0.0f, 1.0f
+    };
+
     float vertices[] = {
         // vertices          // text coords
+
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
          0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
          0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
@@ -122,6 +134,23 @@ int main()
         glm::vec3( 1.5f,  0.2f, -1.5f), 
         glm::vec3(-1.3f,  1.0f, -1.5f)  
     };
+    unsigned int planeVAO, planeVBO;
+    glGenVertexArrays(1, &planeVAO);
+    glGenBuffers(1, &planeVBO);
+    glBindVertexArray(planeVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // Texture coordinate attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0); // Unbind the plane VAO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     unsigned int VAO, VBO;                                                    // Vertex Array Object, stores VBOs, Vert Att configs, and calls to VA
     glGenVertexArrays(1, &VAO);  
@@ -149,14 +178,14 @@ int main()
     glBindTexture(GL_TEXTURE_2D, texture1);
 
     // set the texture wrapping/filtering options (on the currently bound texture object)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // load and generate the texture
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("../src/textures/image.png", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("../src/textures/dirt.jpg", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -167,6 +196,25 @@ int main()
 
     stbi_image_free(data);                                                          // free redundant data
 
+    // Load the cube texture (image.png)
+    unsigned int textureCube;
+    glGenTextures(1, &textureCube);
+    glBindTexture(GL_TEXTURE_2D, textureCube);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    data = stbi_load("../src/textures/image.png", &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+        std::cout << "Failed to load cube texture" << std::endl;
+    stbi_image_free(data);
+
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     shader.use(); // don't forget to activate/use the shader before setting uniforms!
     shader.setInt("texture1", 0);
@@ -174,6 +222,7 @@ int main()
     // the render loop
     while(!glfwWindowShouldClose(window))                                           
     {
+
                 // time calculations
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -181,9 +230,9 @@ int main()
 
                 // inputs
         processInput(window);
-
+        camera.UpdatePhysics(deltaTime);
                 // rendering 
-        glClearColor(.2f,.2f,.2f, 1.0f);
+        glClearColor(.45f,.65f,1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
                 // update shader uniform
@@ -193,10 +242,25 @@ int main()
                 // use our shader program!!!
         shader.use();
 
+        // textrures for plane
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        shader.setInt("texture1", 0);
+        // drawing for plane
+        glBindVertexArray(planeVAO);
+        glm::mat4 planeModel = glm::mat4(1.0f);
+        shader.setMat4("model", planeModel);
+        glDrawArrays(GL_TRIANGLES, 0, 6);  // Draw the plane
+        glBindVertexArray(0);  // Unbind the plane VAO
 
+        //textures for cubes
+        shader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureCube);
+        shader.setInt("texture1", 0);
             // initialize proj vec 
         glm::mat4 projection = glm::mat4(1.0f);
-        projection = glm::perspective(glm::radians(camera.Zoom), (float)800 / (float)600, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(camera.Zoom), (float)1200 / (float)675, 0.1f, 100.0f);
         shader.setMat4("projection", projection);
 
         // move the camera around the space/ view space transformations
@@ -206,20 +270,20 @@ int main()
 
                 // draw everything
         glBindVertexArray(VAO);
-        for(unsigned int i = 0; i < 10; i++)
-        {
-            // move the cubes around the space
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            double time = glfwGetTime();
-            float x = 2.0f * cos(time + i);  // Offset each cube with `i`
-            float z = 2.0f * sin(time + i);
-            glm::vec3 moveovertime( x,  0.0f,  z);
-            model = glm::translate(model, moveovertime);
-            float angle = 20.0f * i + time * (30.0f + 5.0f * i);
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f , 0.3f , 0.5f ));
-            shader.setMat4("model", model);
+        glm::vec3 pathPositions[10];
+        float pathLength = 10.0f;
+        for (int i = 0; i < 10; i++) {
+            float t = i / 10.0f;
+            float x = t * pathLength;
+            float y = -0.5f;  // keep it on the ground
+            float z = sin(t * glm::pi<float>()) + 5.0f;  // create a simple sine wave pattern
+            pathPositions[i] = glm::vec3(x, y, z);
+        }
 
+        for (unsigned int i = 0; i < 10; i++) {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, pathPositions[i]);
+            shader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
         glBindVertexArray(0);                                                       // Unbind after drawing
@@ -242,6 +306,11 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        camera.ProcessKeyboard(JUMP, deltaTime);
+
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(SPRINT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.ProcessKeyboard(FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
