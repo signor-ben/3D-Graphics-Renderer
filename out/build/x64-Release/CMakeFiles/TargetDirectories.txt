@@ -1,3 +1,0 @@
-D:/Everything Else/Local-Github-Repos/3D-Graphics-Engine/out/build/x64-Release/CMakeFiles/testing.dir
-D:/Everything Else/Local-Github-Repos/3D-Graphics-Engine/out/build/x64-Release/CMakeFiles/edit_cache.dir
-D:/Everything Else/Local-Github-Repos/3D-Graphics-Engine/out/build/x64-Release/CMakeFiles/rebuild_cache.dir
