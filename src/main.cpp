@@ -31,8 +31,8 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);                                  // set version of opengl to 3.3
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);                  // using opengl core
-    // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-    // glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+    glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+    glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
   
     GLFWwindow* window = glfwCreateWindow(1200, 675, "TESTING WINDOW", NULL, NULL);  // create a window object
     if (window == NULL)                                                             /* window creation error checking */
@@ -61,11 +61,71 @@ int main()
     }    
 
     Shader shader("../../../src/shaders/vshader.txt", "../../../src/shaders/fshader.txt");
+    Shader skyShader("../../../src/shaders/skyvshader.txt", "../../../src/shaders/skyfshader.txt");
 
     glEnable(GL_DEPTH_TEST); 
+            
+        // vertex data and input 
 
+    // skybox vertices
+    float skyboxVertices[] = {
+        // Positions         
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    };
+
+    unsigned int skyboxVAO, skyboxVBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
     
-    // vertex data and input 
+    glBindVertexArray(0); // Unbind the plane VAO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //plane vertices
     float planeVertices[] = {
         // Positions         // Texture coordinates
         -10.0f, -1.0f, -10.0f, 0.0f, 0.0f,
@@ -76,6 +136,24 @@ int main()
          10.0f, -1.0f,  10.0f, 1.0f, 1.0f,
         -10.0f, -1.0f,  10.0f, 0.0f, 1.0f
     };
+
+    unsigned int planeVAO, planeVBO;
+    glGenVertexArrays(1, &planeVAO);
+    glGenBuffers(1, &planeVBO);
+    glBindVertexArray(planeVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // Texture coordinate attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0); // Unbind the plane VAO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     float vertices[] = {
         // vertices          // text coords
@@ -135,23 +213,7 @@ int main()
         glm::vec3( 1.5f,  0.2f, -1.5f), 
         glm::vec3(-1.3f,  1.0f, -1.5f)  
     };
-    unsigned int planeVAO, planeVBO;
-    glGenVertexArrays(1, &planeVAO);
-    glGenBuffers(1, &planeVBO);
-    glBindVertexArray(planeVAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-
-    // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // Texture coordinate attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glBindVertexArray(0); // Unbind the plane VAO
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     unsigned int VAO, VBO;                                                    // Vertex Array Object, stores VBOs, Vert Att configs, and calls to VA
     glGenVertexArrays(1, &VAO);  
@@ -209,16 +271,48 @@ int main()
     data = stbi_load("../../../src/textures/image.png", &width, &height, &nrChannels, 0);
     if (data)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
         std::cout << "Failed to load cube texture" << std::endl;
     stbi_image_free(data);
 
-    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
-    shader.use(); // don't forget to activate/use the shader before setting uniforms!
-    shader.setInt("texture1", 0);
+    // load cube map/skybox texures
+    std::vector<std::string> faces{
+    "../../../src/textures/skybox/right.png",
+    "../../../src/textures/skybox/left.png",
+    "../../../src/textures/skybox/top.png",
+    "../../../src/textures/skybox/bottom.png",
+    "../../../src/textures/skybox/front.png",
+    "../../../src/textures/skybox/back.png"
+    };
+
+    unsigned int cubemapTexture;
+    glGenTextures(1, &cubemapTexture);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+
+    for (unsigned int i = 0; i < faces.size(); i++) {
+        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data) {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+            );
+            stbi_image_free(data);
+        }
+        else {
+            std::cout << "Failed to load skybox texture: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+
 
     // the render loop
     while(!glfwWindowShouldClose(window))                                           
@@ -233,12 +327,21 @@ int main()
         processInput(window);
         camera.UpdatePhysics(deltaTime);
                 // rendering 
-        glClearColor(.45f,.65f,1.0f, 1.0f);
+        glClearColor(0.098f, 0.098f, 0.44f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-                // update shader uniform
-        glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
-        glBindTexture(GL_TEXTURE_2D, texture1);
+                // use skybox shader
+        glDepthMask(GL_FALSE); // Disable depth writing before rendering skybox
+        skyShader.use();
+        glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // Remove translation
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)1200 / (float)675, 0.1f, 1000.0f);
+        skyShader.setMat4("view", view);
+        skyShader.setMat4("projection", projection);
+        glBindVertexArray(skyboxVAO);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glDepthMask(GL_TRUE); // Re-enable depth writing after rendering the skybox
+        glDepthFunc(GL_LESS); // Restore normal depth testing
 
                 // use our shader program!!!
         shader.use();
@@ -260,35 +363,51 @@ int main()
         glBindTexture(GL_TEXTURE_2D, textureCube);
         shader.setInt("texture1", 0);
             // initialize proj vec 
-        glm::mat4 projection = glm::mat4(1.0f);
+        projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(camera.Zoom), (float)1200 / (float)675, 0.1f, 100.0f);
         shader.setMat4("projection", projection);
 
         // move the camera around the space/ view space transformations
-        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::mat4(1.0f);
         view = camera.GetViewMatrix();
         shader.setMat4("view", view);
 
+        glEnable(GL_BLEND); // Enable blending
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Blend using alpha channel
                 // draw everything
         glBindVertexArray(VAO);
-        glm::vec3 pathPositions[10];
-        float pathLength = 10.0f;
-        for (int i = 0; i < 10; i++) {
-            float t = i / 10.0f;
-            float x = t * pathLength;
-            float y = -0.5f;  // keep it on the ground
-            float z = sin(t * glm::pi<float>()) + 5.0f;  // create a simple sine wave pattern
-            pathPositions[i] = glm::vec3(x, y, z);
+        std::vector<glm::vec3> perimeterPositions;
+        float planeSize = 20.0f;  // Adjust based on your plane
+        float cubeSpacing = 1.0f; // Adjust as needed
+
+        // Place cubes along the four edges
+        for (float x = -planeSize / 2; x <= planeSize / 2; x += cubeSpacing) {
+            perimeterPositions.push_back(glm::vec3(x, -0.5f, -planeSize / 2)); // Front edge
+            perimeterPositions.push_back(glm::vec3(x, -0.5f, planeSize / 2));  // Back edge
+        }
+        for (float z = -planeSize / 2; z <= planeSize / 2; z += cubeSpacing) {
+            perimeterPositions.push_back(glm::vec3(-planeSize / 2, -0.5f, z)); // Left edge
+            perimeterPositions.push_back(glm::vec3(planeSize / 2, -0.5f, z));  // Right edge
         }
 
-        for (unsigned int i = 0; i < 10; i++) {
+        for (float x = -planeSize / 2; x <= planeSize / 2; x += cubeSpacing) {
+            perimeterPositions.push_back(glm::vec3(x, 0.5f, -planeSize / 2 -1)); // Front edge
+            perimeterPositions.push_back(glm::vec3(x, 0.5f, planeSize / 2 + 1));  // Back edge
+        }
+        for (float z = -planeSize / 2; z <= planeSize / 2; z += cubeSpacing) {
+            perimeterPositions.push_back(glm::vec3(-planeSize / 2 - 1, 0.5f, z)); // Left edge
+            perimeterPositions.push_back(glm::vec3(planeSize / 2 + 1, 0.5f, z));  // Right edge
+        }
+
+
+        for (const auto& pos : perimeterPositions) {
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, pathPositions[i]);
+            model = glm::translate(model, pos);
             shader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
         glBindVertexArray(0);                                                       // Unbind after drawing
-
+        glDisable(GL_BLEND);
                 // check/call events, and swap buffers
         
         glfwSwapBuffers(window);
