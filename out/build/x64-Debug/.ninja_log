@@ -1,5 +1,0 @@
-# ninja log v6
-21	391	7615106582768867	CMakeFiles/testing.dir/src/stb_image.cpp.obj	9158823544b51e8d
-16	528	7615106582768867	CMakeFiles/testing.dir/src/glad.c.obj	78698dc5395d9020
-9	1545	7615106582612341	CMakeFiles/testing.dir/src/main.cpp.obj	28f67a3e91fcdec
-1548	2093	7615106598110659	testing.exe	91f32b39400eb7b8
