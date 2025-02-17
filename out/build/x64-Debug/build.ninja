@@ -51,7 +51,7 @@ build cmake_object_order_depends_target_testing: phony || .
 
 build CMakeFiles\testing.dir\src\main.cpp.obj: CXX_COMPILER__testing_unscanned_Debug D$:\Everything$ Else\Local-Github-Repos\3D-Graphics-Engine\src\main.cpp || cmake_object_order_depends_target_testing
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++17
-  INCLUDES = -I"D:\Everything Else\Local-Github-Repos\3D-Graphics-Engine\include" -I"D:\Everything Else\Local-Github-Repos\3D-Graphics-Engine\vcpkg\installed\x64-windows\include"
+  INCLUDES = -I"D:\Everything Else\Local-Github-Repos\3D-Graphics-Engine\include"
   OBJECT_DIR = CMakeFiles\testing.dir
   OBJECT_FILE_DIR = CMakeFiles\testing.dir\src
   TARGET_COMPILE_PDB = CMakeFiles\testing.dir\
@@ -59,7 +59,7 @@ build CMakeFiles\testing.dir\src\main.cpp.obj: CXX_COMPILER__testing_unscanned_D
 
 build CMakeFiles\testing.dir\src\glad.c.obj: C_COMPILER__testing_unscanned_Debug D$:\Everything$ Else\Local-Github-Repos\3D-Graphics-Engine\src\glad.c || cmake_object_order_depends_target_testing
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -I"D:\Everything Else\Local-Github-Repos\3D-Graphics-Engine\include" -I"D:\Everything Else\Local-Github-Repos\3D-Graphics-Engine\vcpkg\installed\x64-windows\include"
+  INCLUDES = -I"D:\Everything Else\Local-Github-Repos\3D-Graphics-Engine\include"
   OBJECT_DIR = CMakeFiles\testing.dir
   OBJECT_FILE_DIR = CMakeFiles\testing.dir\src
   TARGET_COMPILE_PDB = CMakeFiles\testing.dir\
@@ -67,7 +67,7 @@ build CMakeFiles\testing.dir\src\glad.c.obj: C_COMPILER__testing_unscanned_Debug
 
 build CMakeFiles\testing.dir\src\stb_image.cpp.obj: CXX_COMPILER__testing_unscanned_Debug D$:\Everything$ Else\Local-Github-Repos\3D-Graphics-Engine\src\stb_image.cpp || cmake_object_order_depends_target_testing
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++17
-  INCLUDES = -I"D:\Everything Else\Local-Github-Repos\3D-Graphics-Engine\include" -I"D:\Everything Else\Local-Github-Repos\3D-Graphics-Engine\vcpkg\installed\x64-windows\include"
+  INCLUDES = -I"D:\Everything Else\Local-Github-Repos\3D-Graphics-Engine\include"
   OBJECT_DIR = CMakeFiles\testing.dir
   OBJECT_FILE_DIR = CMakeFiles\testing.dir\src
   TARGET_COMPILE_PDB = CMakeFiles\testing.dir\

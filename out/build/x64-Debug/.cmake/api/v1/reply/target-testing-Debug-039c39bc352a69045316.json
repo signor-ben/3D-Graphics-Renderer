@@ -30,31 +30,25 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 20,
+				"line" : 19,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 17,
+				"line" : 16,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 23,
+				"line" : 22,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
 				"line" : 13,
-				"parent" : 0
-			},
-			{
-				"command" : 3,
-				"file" : 0,
-				"line" : 14,
 				"parent" : 0
 			}
 		]
@@ -73,10 +67,6 @@
 				{
 					"backtrace" : 4,
 					"path" : "D:/Everything Else/Local-Github-Repos/3D-Graphics-Engine/include"
-				},
-				{
-					"backtrace" : 5,
-					"path" : "D:/Everything Else/Local-Github-Repos/3D-Graphics-Engine/vcpkg/installed/x64-windows/include"
 				}
 			],
 			"language" : "CXX",
@@ -106,10 +96,6 @@
 				{
 					"backtrace" : 4,
 					"path" : "D:/Everything Else/Local-Github-Repos/3D-Graphics-Engine/include"
-				},
-				{
-					"backtrace" : 5,
-					"path" : "D:/Everything Else/Local-Github-Repos/3D-Graphics-Engine/vcpkg/installed/x64-windows/include"
 				}
 			],
 			"language" : "C",
