@@ -26,7 +26,7 @@ float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
 // lighting
-glm::vec3 lightPos(0.0f, 2.0f, 0.0f);
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 int main()
 {
@@ -63,71 +63,11 @@ int main()
         return -1;
     }    
 
-    Shader shader("../../../src/shaders/vshader.txt", "../../../src/shaders/fshader.txt");
+    Shader lightingShader("../../../src/shaders/vshader.txt", "../../../src/shaders/fshader.txt");
     Shader skyShader("../../../src/shaders/skyvshader.txt", "../../../src/shaders/skyfshader.txt");
-    Shader lightShader("../../../src/shaders/lightvshader.txt", "../../../src/shaders/lightfshader.txt");
+    Shader lightCubeShader("../../../src/shaders/lightvshader.txt", "../../../src/shaders/lightfshader.txt");
 
     glEnable(GL_DEPTH_TEST); 
-            
-        // vertex data and input 
-    // light cub vertices
-    float lightVertices[] = {
-        // vertices         
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f, 
-
-        -0.5f,  0.5f,  0.5f,  
-        -0.5f,  0.5f, -0.5f,  
-        -0.5f, -0.5f, -0.5f,  
-        -0.5f, -0.5f, -0.5f,  
-        -0.5f, -0.5f,  0.5f, 
-        -0.5f,  0.5f,  0.5f, 
-
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,  
-         0.5f, -0.5f, -0.5f,  
-         0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f,  0.5f, 
-         0.5f,  0.5f,  0.5f, 
-
-        -0.5f, -0.5f, -0.5f,  
-         0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f,  0.5f,  
-         0.5f, -0.5f,  0.5f, 
-        -0.5f, -0.5f,  0.5f,  
-        -0.5f, -0.5f, -0.5f,  
-
-        -0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f, 
-         0.5f,  0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f,  0.5f, -0.5f
-    };
-
-    unsigned int lightVAO, lightVBO;
-    glGenVertexArrays(1, &lightVAO);
-    glGenBuffers(1, &lightVBO);
-    glBindVertexArray(lightVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(lightVertices), &lightVertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindVertexArray(0); // Unbind the light VAO
-    glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind VBO
-
 
     // skybox vertices
     float skyboxVertices[] = {
@@ -183,137 +123,84 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    
-    glBindVertexArray(0); // Unbind the plane VAO
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    //plane vertices
-    float planeVertices[] = {
-        // Positions           // Tex Coords
-        -10.0f, -1.0f, -10.0f,  0.0f, 0.0f,   0.0f,  1.0f,  0.0f,
-         10.0f, -1.0f, -10.0f,  1.0f, 0.0f,   0.0f,  1.0f,  0.0f,
-         10.0f, -1.0f,  10.0f,  1.0f, 1.0f,   0.0f,  1.0f,  0.0f,
-
-        -10.0f, -1.0f, -10.0f,  0.0f, 0.0f,   0.0f,  1.0f,  0.0f,
-         10.0f, -1.0f,  10.0f,  1.0f, 1.0f,   0.0f,  1.0f,  0.0f,
-        -10.0f, -1.0f,  10.0f,  0.0f, 1.0f,   0.0f,  1.0f,  0.0f
-    };
-
-    unsigned int planeVAO, planeVBO;
-    glGenVertexArrays(1, &planeVAO);
-    glGenBuffers(1, &planeVBO);
-    glBindVertexArray(planeVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-
-    // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // Texture coordinate attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    // normal attributes
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(2 * sizeof(float)));
-    glEnableVertexAttribArray(2);
 
     glBindVertexArray(0); // Unbind the plane VAO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+            
     float vertices[] = {
-        // vertices          //text coords  //normal vecs
+        // Positions          // Normals           // Texture Coords
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f, // front face
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,   0.0f,  0.0f, -1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,   0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,   0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,   0.0f,  0.0f, -1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,   0.0f,  0.0f, -1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,   0.0f,  0.0f, -1.0f,
-    
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,   0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,   0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,   0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,   0.0f,  0.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,   0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,   0.0f,  0.0f, 1.0f,
-    
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,   -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,   -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,   -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,   -1.0f,  0.0f,  0.0f, 
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,   -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,   -1.0f,  0.0f,  0.0f,
-    
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,   1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,   1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,   1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,   1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,   1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,   1.0f,  0.0f,  0.0f,
-    
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,   0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,   0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,   0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,   0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,   0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,   0.0f, -1.0f,  0.0f,
-    
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,   0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,   0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,   0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,   0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,   0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,   0.0f,  1.0f,  0.0f
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f, // back face
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // left face
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // right face
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f, // bottom face
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f, // top face
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
+    // first, configure the cube's VAO (and VBO)
+    unsigned int VBO, cubeVAO;
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &VBO);
 
-    unsigned int VAO, VBO;                                                    // Vertex Array Object, stores VBOs, Vert Att configs, and calls to VA
-    glGenVertexArrays(1, &VAO);  
-    glGenBuffers(1, &VBO);                                                          // generate an obj id with glGenBuffers
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);                                             // bind the VBO to an array buffer type
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);      // copy data from vertices into the buffer
+    glBindVertexArray(cubeVAO);
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    // normal attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    // normal vector attribute
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(2 * sizeof(float)));
+    // Texture coordinate attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    glBindVertexArray(0);                                                           // Unbind VAO
-    glBindBuffer(GL_ARRAY_BUFFER, 0);                                               // Unbind VBO
+    // second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
+    unsigned int lightCubeVAO;
+    glGenVertexArrays(1, &lightCubeVAO);
+    glBindVertexArray(lightCubeVAO);
 
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // note that we update the lamp's position attribute's stride to reflect the updated buffer data
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
-    // textures!!!
-    unsigned int texture1;
-    glGenTextures(1, &texture1);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-
-    // set the texture wrapping/filtering options (on the currently bound texture object)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    // load and generate the texture
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load("../../../src/textures/dirt.jpg", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-        std::cout << "Failed to load texture" << std::endl;
-
-    stbi_image_free(data);                                                          // free redundant data
-
-    // Load the cube texture (image.png)
     unsigned int textureCube;
     glGenTextures(1, &textureCube);
     glBindTexture(GL_TEXTURE_2D, textureCube);
@@ -321,8 +208,8 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    data = stbi_load("../../../src/textures/image.png", &width, &height, &nrChannels, 0);
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load("../../../src/textures/image.png", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -345,7 +232,11 @@ int main()
     unsigned int cubemapTexture;
     glGenTextures(1, &cubemapTexture);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     for (unsigned int i = 0; i < faces.size(); i++) {
         unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
         if (data) {
@@ -360,11 +251,7 @@ int main()
         }
     }
 
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
 
 
 
@@ -381,9 +268,9 @@ int main()
         processInput(window);
         camera.UpdatePhysics(deltaTime);
                 // rendering 
-        glClearColor(0.098f, 0.098f, 0.44f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                // use skybox shader
+       
         glDepthMask(GL_FALSE); // Disable depth writing before rendering skybox
         skyShader.use();
         glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // Remove translation
@@ -397,100 +284,60 @@ int main()
         glDepthMask(GL_TRUE); // Re-enable depth writing after rendering the skybox
         glDepthFunc(GL_LESS); // Restore normal depth testing
 
-                // use our shader program!!!
-        shader.use();
-        shader.setVec3("lightColor", 1.0f, 0.96f, 0.71f);
         float radius = 5.0f;  // Radius of circular motion
         float time = glfwGetTime();
-
         lightPos.x = cos(time) * radius;  // Circular motion in XZ plane
         lightPos.z = sin(time) * radius;  // Circular motion in XZ plane
-        shader.setVec3("lightPos", lightPos);
-        shader.setVec3("viewPos", camera.Position);
 
-        // textrures for plane
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        shader.setInt("texture1", 0);
-        // drawing for plane
-        glBindVertexArray(planeVAO);
-        glm::mat4 planeModel = glm::mat4(1.0f);
-        shader.setMat4("model", planeModel);
-        glDrawArrays(GL_TRIANGLES, 0, 6);  // Draw the plane
-        glBindVertexArray(0);  // Unbind the plane VAO
+        lightingShader.use();
+        lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+        lightingShader.setVec3("lightPos", lightPos);
+        lightingShader.setVec3("viewPos", camera.Position);
 
-        //textures for cubes
-        shader.use();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureCube);
-        shader.setInt("texture1", 0);
-            // initialize proj vec 
-        projection = glm::mat4(1.0f);
+        // view/projection transformations
         projection = glm::perspective(glm::radians(camera.Zoom), (float)1200 / (float)675, 0.1f, 100.0f);
-        shader.setMat4("projection", projection);
-
-        // move the camera around the space/ view space transformations
-        view = glm::mat4(1.0f);
         view = camera.GetViewMatrix();
-        shader.setMat4("view", view);
+        lightingShader.setMat4("projection", projection);
+        lightingShader.setMat4("view", view);
 
+        // world transformation
+        glm::mat4 model = glm::mat4(1.0f);
+        lightingShader.setMat4("model", model);
+
+        // render the cube
         glEnable(GL_BLEND); // Enable blending
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Blend using alpha channel
-                // draw everything
-        glBindVertexArray(VAO);
-        std::vector<glm::vec3> perimeterPositions;
-        float planeSize = 20.0f;  // Adjust based on your plane
-        float cubeSpacing = 1.0f; // Adjust as needed
-
-        // Place cubes along the four edges
-        for (float x = -planeSize / 2; x <= planeSize / 2; x += cubeSpacing) {
-            perimeterPositions.push_back(glm::vec3(x, -0.5f, -planeSize / 2)); // Front edge
-            perimeterPositions.push_back(glm::vec3(x, -0.5f, planeSize / 2));  // Back edge
-        }
-        for (float z = -planeSize / 2; z <= planeSize / 2; z += cubeSpacing) {
-            perimeterPositions.push_back(glm::vec3(-planeSize / 2, -0.5f, z)); // Left edge
-            perimeterPositions.push_back(glm::vec3(planeSize / 2, -0.5f, z));  // Right edge
-        }
-
-        for (float x = -planeSize / 2; x <= planeSize / 2; x += cubeSpacing) {
-            perimeterPositions.push_back(glm::vec3(x, 0.5f, -planeSize / 2 -1)); // Front edge
-            perimeterPositions.push_back(glm::vec3(x, 0.5f, planeSize / 2 + 1));  // Back edge
-        }
-        for (float z = -planeSize / 2; z <= planeSize / 2; z += cubeSpacing) {
-            perimeterPositions.push_back(glm::vec3(-planeSize / 2 - 1, 0.5f, z)); // Left edge
-            perimeterPositions.push_back(glm::vec3(planeSize / 2 + 1, 0.5f, z));  // Right edge
-        }
-
-
-        for (const auto& pos : perimeterPositions) {
+        glBindVertexArray(cubeVAO);
+        glBindTexture(GL_TEXTURE_2D, textureCube);
+        for (int i = 0; i < 2; i++)
+        {
             glm::mat4 model = glm::mat4(1.0f);
+            glm::vec3 pos((float)i, 0.0f , 0.0f);
             model = glm::translate(model, pos);
-            shader.setMat4("model", model);
+            lightingShader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
-        glBindVertexArray(0);                                                       // Unbind after drawing
+
+        glBindVertexArray(0);
         glDisable(GL_BLEND);
 
-        // render light cube
-        lightShader.use();
-        lightShader.setMat4("projection", projection);
-        lightShader.setMat4("view", view);
-        glm::mat4 model = glm::mat4(1.0f);
+        // also draw the lamp object
+        lightCubeShader.use();
+        lightCubeShader.setMat4("projection", projection);
+        lightCubeShader.setMat4("view", view);
+        model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.5f)); // a smaller cube
-        lightShader.setMat4("model", model);
+        lightCubeShader.setMat4("model", model);
 
-        glBindVertexArray(lightVAO);
+        glBindVertexArray(lightCubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
-                // check/call events, and swap buffers
-        
+
         glfwSwapBuffers(window);
         glfwPollEvents();    
     }
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
