@@ -26,7 +26,7 @@ float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
 // lighting
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightPos(0.0f, 3.0f, 0.0f);
 
 int main()
 {
@@ -201,6 +201,35 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    float planeVertices[] = {
+        // Positions         // Normals           // Texture Coords
+        -10.0f, -1.5f, -10.0f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+         10.0f, -1.5f, -10.0f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+         10.0f, -1.5f,  10.0f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+
+        -10.0f, -1.5f, -10.0f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+         10.0f, -1.5f,  10.0f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+        -10.0f, -1.5f,  10.0f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
+    };
+
+    unsigned int planeVAO, planeVBO;
+    glGenVertexArrays(1, &planeVAO);
+    glGenBuffers(1, &planeVBO);
+    glBindVertexArray(planeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // Normal attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // Texture coordinate attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+
     unsigned int textureCube;
     glGenTextures(1, &textureCube);
     glBindTexture(GL_TEXTURE_2D, textureCube);
@@ -251,8 +280,24 @@ int main()
         }
     }
 
-
-
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Set texture wrapping (S direction)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Set texture wrapping (T direction)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    data = stbi_load("../../../src/textures/dirt.jpg", &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture!" << std::endl;
+    }
+    stbi_image_free(data);
 
 
     // the render loop
@@ -285,10 +330,22 @@ int main()
         glDepthFunc(GL_LESS); // Restore normal depth testing
 
         float radius = 5.0f;  // Radius of circular motion
-        float time = glfwGetTime();
+        float time = glfwGetTime() * 1.5f;
         lightPos.x = cos(time) * radius;  // Circular motion in XZ plane
         lightPos.z = sin(time) * radius;  // Circular motion in XZ plane
 
+        // render plane
+        lightingShader.use(); 
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f)); // scale it to make it large (adjust values as needed)
+        lightingShader.setMat4("model", model);
+        glBindTexture(GL_TEXTURE_2D, textureID); 
+        glBindVertexArray(planeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6); 
+        glBindVertexArray(0);
+
+        // cubes
         lightingShader.use();
         lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         lightingShader.setVec3("lightPos", lightPos);
@@ -301,23 +358,70 @@ int main()
         lightingShader.setMat4("view", view);
 
         // world transformation
-        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::mat4(1.0f);
         lightingShader.setMat4("model", model);
-
-        // render the cube
+        
+        // render the cubes
         glEnable(GL_BLEND); // Enable blending
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Blend using alpha channel
         glBindVertexArray(cubeVAO);
         glBindTexture(GL_TEXTURE_2D, textureCube);
-        for (int i = 0; i < 2; i++)
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            glm::vec3 pos((float)i, 0.0f , 0.0f);
-            model = glm::translate(model, pos);
-            lightingShader.setMat4("model", model);
+           
+        int perimeterLength = 20; // Number of cubes on each side of the perimeter
+        float spacing = 1.0f; // Distance between the cubes
+        float offset = (perimeterLength - 1) * spacing / 2.0f; // Half the perimeter size, to center the cubes around the origin
+
+        // Loop through each side of the perimeter (top, bottom, left, right)
+        for (int i = 0; i < perimeterLength; i++) {
+            // Top side
+            glm::vec3 posTop(i * spacing - offset, -1.0f, -offset); // Adjust position to center
+            glm::mat4 modelTop = glm::mat4(1.0f);
+            modelTop = glm::translate(modelTop, posTop);
+            lightingShader.setMat4("model", modelTop);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+
+            glm::vec3 posTop2(i * spacing - offset, 1.0f, -offset); // Adjust position to center
+            modelTop = glm::mat4(1.0f);
+            modelTop = glm::translate(modelTop, posTop2);
+            lightingShader.setMat4("model", modelTop);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+            // Bottom side
+            glm::vec3 posBottom(i * spacing - offset, -1.0f, offset); // Adjust position to center
+            glm::mat4 modelBottom = glm::mat4(1.0f);
+            modelBottom = glm::translate(modelBottom, posBottom);
+            lightingShader.setMat4("model", modelBottom);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+
+            glm::vec3 posBottom2(i * spacing - offset, 1.0f, offset); // Adjust position to center
+            modelBottom = glm::mat4(1.0f);
+            modelBottom = glm::translate(modelBottom, posBottom2);
+            lightingShader.setMat4("model", modelBottom);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+            // Left side
+            glm::vec3 posLeft(-offset, -1.0f, i * spacing - offset); // Adjust position to center
+            glm::mat4 modelLeft = glm::mat4(1.0f);
+            modelLeft = glm::translate(modelLeft, posLeft);
+            lightingShader.setMat4("model", modelLeft);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+
+            glm::vec3 posLeft2(-offset, 1.0f, i* spacing - offset); // Adjust position to center
+            modelLeft = glm::mat4(1.0f);
+            modelLeft = glm::translate(modelLeft, posLeft2);
+            lightingShader.setMat4("model", modelLeft);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+            // Right side
+            glm::vec3 posRight(offset, -1.0f, i * spacing - offset); // Adjust position to center
+            glm::mat4 modelRight = glm::mat4(1.0f);
+            modelRight = glm::translate(modelRight, posRight);
+            lightingShader.setMat4("model", modelRight);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+
+            glm::vec3 posRight2(offset, 1.0f, i * spacing - offset); // Adjust position to center
+            modelRight = glm::mat4(1.0f);
+            modelRight = glm::translate(modelRight, posRight2);
+            lightingShader.setMat4("model", modelRight);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
-
         glBindVertexArray(0);
         glDisable(GL_BLEND);
 
