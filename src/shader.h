@@ -95,6 +95,14 @@ class Shader
         {
             glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
         }
+        void setVec3(const std::string& name, glm::vec3& value) const
+        {
+            glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+        }
+        void setVec3(const std::string& name, float x, float y, float z) const
+        {
+            glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
+        }
 
         // utility compile checker
         void checkCompileErrors(unsigned int shader, std::string type)
